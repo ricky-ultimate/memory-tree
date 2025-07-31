@@ -1,28 +1,37 @@
-import { IsString, IsEmail, IsOptional, MaxLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-export class CreateUserDto {
+export class UserResponseDto {
   @ApiProperty({
-    description: 'Clerk user ID',
+    description: 'User ID',
     example: 'user_2NiWoBO2hdTpKxMjYDqmHHGMaZb',
   })
-  @IsString()
   id: string;
 
   @ApiProperty({
     description: 'User email address',
     example: 'user@example.com',
   })
-  @IsEmail()
   email: string;
 
   @ApiPropertyOptional({
     description: 'User display name',
     example: 'John Doe',
-    maxLength: 100,
   })
-  @IsOptional()
-  @IsString()
-  @MaxLength(100)
   name?: string;
+
+  @ApiProperty({
+    description: 'Account creation date',
+  })
+  createdAt: Date;
+
+  @ApiProperty({
+    description: 'Last update date',
+  })
+  updatedAt: Date;
+
+  @ApiPropertyOptional({
+    description: 'Number of fragments created by user',
+    example: 42,
+  })
+  fragmentCount?: number;
 }
