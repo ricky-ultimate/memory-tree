@@ -6,39 +6,83 @@ import {
   Param,
   Delete,
   Query,
+  UseGuards,
+  Patch,
 } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { FragmentsService } from './fragments.service';
-import { FragmentType } from 'generated/prisma';
+import { CreateFragmentDto } from './dto/create-fragment.dto';
+import { UpdateFragmentDto } from './dto/update-fragment.dto';
+import { GetFragmentsQueryDto } from './dto/get-fragments-query.dto';
+import { FragmentResponseDto, PaginatedFragmentsResponseDto } from './dto/fragment-response.dto';
+import { ClerkAuthGuard } from '../auth/guards/clerk-auth.guard';
+import { GetUser } from '../common/decorators/get-user.decorator';
+import type { UserPayload } from '../auth/guards/clerk-auth.guard';
 
+@ApiTags('fragments')
+@ApiBearerAuth()
+@UseGuards(ClerkAuthGuard)
 @Controller('fragments')
 export class FragmentsController {
   constructor(private readonly fragmentsService: FragmentsService) {}
 
   @Post()
-  create(
-    @Body()
-    createFragmentDto: {
-      content: string;
-      type?: FragmentType;
-      userId: string;
-      metadata?: any;
-    },
-  ) {
-    return this.fragmentsService.create(createFragmentDto);
+  @ApiOperation({ summary: 'Create a new fragment' })
+  @ApiResponse({ status: 201, description: 'Fragment created successfully', type: FragmentResponseDto })
+  @ApiResponse({ status: 400, description: 'Invalid input data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async create(
+    @Body() createFragmentDto: CreateFragmentDto,
+    @GetUser() user: UserPayload,
+  ): Promise<FragmentResponseDto> {
+    return this.fragmentsService.create(user.id, createFragmentDto);
   }
 
   @Get()
-  findAll(@Query('userId') userId: string) {
-    return this.fragmentsService.findAllByUser(userId);
+  @ApiOperation({ summary: 'Get all fragments for the authenticated user' })
+  @ApiResponse({ status: 200, description: 'Fragments retrieved successfully', type: PaginatedFragmentsResponseDto })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async findAll(
+    @Query() query: GetFragmentsQueryDto,
+    @GetUser() user: UserPayload,
+  ): Promise<PaginatedFragmentsResponseDto> {
+    return this.fragmentsService.findAllByUser(user.id, query);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string, @Query('userId') userId: string) {
-    return this.fragmentsService.findOne(id, userId);
+  @ApiOperation({ summary: 'Get a specific fragment by ID' })
+  @ApiResponse({ status: 200, description: 'Fragment retrieved successfully', type: FragmentResponseDto })
+  @ApiResponse({ status: 404, description: 'Fragment not found' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async findOne(
+    @Param('id') id: string,
+    @GetUser() user: UserPayload,
+  ): Promise<FragmentResponseDto> {
+    return this.fragmentsService.findOne(id, user.id);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update a fragment' })
+  @ApiResponse({ status: 200, description: 'Fragment updated successfully', type: FragmentResponseDto })
+  @ApiResponse({ status: 404, description: 'Fragment not found' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async update(
+    @Param('id') id: string,
+    @Body() updateFragmentDto: UpdateFragmentDto,
+    @GetUser() user: UserPayload,
+  ): Promise<FragmentResponseDto> {
+    return this.fragmentsService.update(id, user.id, updateFragmentDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string, @Query('userId') userId: string) {
-    return this.fragmentsService.remove(id, userId);
+  @ApiOperation({ summary: 'Delete a fragment' })
+  @ApiResponse({ status: 204, description: 'Fragment deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Fragment not found' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async remove(
+    @Param('id') id: string,
+    @GetUser() user: UserPayload,
+  ): Promise<void> {
+    return this.fragmentsService.remove(id, user.id);
   }
 }
