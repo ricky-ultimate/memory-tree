@@ -6,6 +6,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { clerkClient } from '@clerk/clerk-sdk-node';
+import { UsersService } from '../../users/users.service';
 
 export interface UserPayload {
   id: string;
@@ -13,11 +14,15 @@ export interface UserPayload {
   firstName?: string;
   lastName?: string;
   name?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 @Injectable()
 export class ClerkAuthGuard implements CanActivate {
   private readonly logger = new Logger(ClerkAuthGuard.name);
+
+  constructor(private readonly usersService: UsersService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -28,24 +33,43 @@ export class ClerkAuthGuard implements CanActivate {
     }
 
     try {
+      // Verify session with Clerk
       const session = await clerkClient.sessions.getSession(sessionId);
 
       if (!session || session.status !== 'active') {
         throw new UnauthorizedException('Invalid or expired session');
       }
 
-      const user = await clerkClient.users.getUser(session.userId);
-      const email = user.emailAddresses[0]?.emailAddress;
-      const firstName = user.firstName;
-      const lastName = user.lastName;
-      const name = firstName && lastName ? `${firstName} ${lastName}` : firstName || lastName || email?.split('@')[0];
+      // Get user details from Clerk
+      const clerkUser = await clerkClient.users.getUser(session.userId);
+      const email = clerkUser.emailAddresses[0]?.emailAddress;
 
+      if (!email) {
+        throw new UnauthorizedException('User email not found');
+      }
+
+      const firstName = clerkUser.firstName;
+      const lastName = clerkUser.lastName;
+      const name = firstName && lastName ? `${firstName} ${lastName}` : firstName || lastName || email.split('@')[0];
+
+      // Find or create user in our database
+      const userData = {
+        id: clerkUser.id,
+        email,
+        name,
+      };
+
+      const user = await this.usersService.findOrCreate(userData);
+
+      // Attach user to request
       request.user = {
         id: user.id,
-        email,
+        email: user.email,
+        name: user.name,
         firstName,
         lastName,
-        name,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
       };
 
       return true;

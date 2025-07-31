@@ -2,11 +2,20 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { ValidationExceptionFilter } from './common/filters/validation-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const logger = new Logger('Bootstrap');
 
+  // Global exception filters (order matters - most specific first)
+  app.useGlobalFilters(
+    new ValidationExceptionFilter(),
+    new HttpExceptionFilter(),
+  );
+
+  // Global validation pipe
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -14,6 +23,15 @@ async function bootstrap() {
       transform: true,
       transformOptions: {
         enableImplicitConversion: true,
+      },
+      exceptionFactory: (errors) => {
+        // Custom validation error format
+        const formattedErrors = errors.map(error => ({
+          property: error.property,
+          value: error.value,
+          constraints: error.constraints,
+        }));
+        return new ValidationPipe().createExceptionFactory()(formattedErrors);
       },
     }),
   );
