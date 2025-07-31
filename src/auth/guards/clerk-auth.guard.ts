@@ -12,6 +12,7 @@ export interface UserPayload {
   email: string;
   firstName?: string;
   lastName?: string;
+  name?: string;
 }
 
 @Injectable()
@@ -34,12 +35,17 @@ export class ClerkAuthGuard implements CanActivate {
       }
 
       const user = await clerkClient.users.getUser(session.userId);
+      const email = user.emailAddresses[0]?.emailAddress;
+      const firstName = user.firstName;
+      const lastName = user.lastName;
+      const name = firstName && lastName ? `${firstName} ${lastName}` : firstName || lastName || email?.split('@')[0];
 
       request.user = {
         id: user.id,
-        email: user.emailAddresses[0]?.emailAddress,
-        firstName: user.firstName,
-        lastName: user.lastName,
+        email,
+        firstName,
+        lastName,
+        name,
       };
 
       return true;
@@ -53,6 +59,12 @@ export class ClerkAuthGuard implements CanActivate {
     const sessionHeader = request.headers['x-session-id'];
     if (sessionHeader) {
       return sessionHeader;
+    }
+
+    // Also check Authorization header for Bearer token
+    const authHeader = request.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      return authHeader.substring(7);
     }
   }
 }
