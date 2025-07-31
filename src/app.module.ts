@@ -7,6 +7,7 @@ import { PrismaService } from './prisma/prisma.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
+import { BranchesModule } from './branches/branches.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { AuthModule } from './auth/auth.module';
     FragmentsModule,
     PrismaModule,
     AuthModule,
+    BranchesModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
