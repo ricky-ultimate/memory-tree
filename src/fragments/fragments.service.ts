@@ -1,26 +1,43 @@
 import { Injectable } from '@nestjs/common';
-import { CreateFragmentDto } from './dto/create-fragment.dto';
-import { UpdateFragmentDto } from './dto/update-fragment.dto';
+import { PrismaService } from '../prisma/prisma.service';
+import { Fragment, FragmentType } from 'generated/prisma';
 
 @Injectable()
 export class FragmentsService {
-  create(createFragmentDto: CreateFragmentDto) {
-    return 'This action adds a new fragment';
+  constructor(private prisma: PrismaService) {}
+
+  async create(data: {
+    content: string;
+    type?: FragmentType;
+    userId: string;
+    metadata?: any;
+  }): Promise<Fragment> {
+    return this.prisma.fragment.create({
+      data: {
+        content: data.content,
+        type: data.type || 'TEXT',
+        userId: data.userId,
+        metadata: data.metadata || {},
+      },
+    });
   }
 
-  findAll() {
-    return `This action returns all fragments`;
+  async findAllByUser(userId: string): Promise<Fragment[]> {
+    return this.prisma.fragment.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} fragment`;
+  async findOne(id: string, userId: string): Promise<Fragment | null> {
+    return this.prisma.fragment.findFirst({
+      where: { id, userId },
+    });
   }
 
-  update(id: number, updateFragmentDto: UpdateFragmentDto) {
-    return `This action updates a #${id} fragment`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} fragment`;
+  async remove(id: string, userId: string): Promise<Fragment> {
+    return this.prisma.fragment.delete({
+      where: { id },
+    });
   }
 }

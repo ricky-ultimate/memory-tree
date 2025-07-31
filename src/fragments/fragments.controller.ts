@@ -1,34 +1,44 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { FragmentsService } from './fragments.service';
-import { CreateFragmentDto } from './dto/create-fragment.dto';
-import { UpdateFragmentDto } from './dto/update-fragment.dto';
+import { FragmentType } from 'generated/prisma';
 
 @Controller('fragments')
 export class FragmentsController {
   constructor(private readonly fragmentsService: FragmentsService) {}
 
   @Post()
-  create(@Body() createFragmentDto: CreateFragmentDto) {
+  create(
+    @Body()
+    createFragmentDto: {
+      content: string;
+      type?: FragmentType;
+      userId: string;
+      metadata?: any;
+    },
+  ) {
     return this.fragmentsService.create(createFragmentDto);
   }
 
   @Get()
-  findAll() {
-    return this.fragmentsService.findAll();
+  findAll(@Query('userId') userId: string) {
+    return this.fragmentsService.findAllByUser(userId);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.fragmentsService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateFragmentDto: UpdateFragmentDto) {
-    return this.fragmentsService.update(+id, updateFragmentDto);
+  findOne(@Param('id') id: string, @Query('userId') userId: string) {
+    return this.fragmentsService.findOne(id, userId);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.fragmentsService.remove(+id);
+  remove(@Param('id') id: string, @Query('userId') userId: string) {
+    return this.fragmentsService.remove(id, userId);
   }
 }
