@@ -37,7 +37,34 @@ model Fragment {
     user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId String
 
+    // Relationships - fragments this one connects TO
+    branchesFrom Branch[] @relation("SourceFragment")
+    // Relationships - fragments that connect TO this one
+    branchesTo   Branch[] @relation("TargetFragment")
+
     @@map("fragments")
+}
+
+model Branch {
+    id       String @id @default(cuid())
+    type     String // "THEME", "EMOTION", "TIME", "MEMORY", "MANUAL"
+    weight   Float  @default(1.0) // Strength of connection (0.0 - 1.0)
+    metadata Json? // Additional context about the relationship
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Source fragment (the one that links TO another)
+    source   Fragment @relation("SourceFragment", fields: [sourceId], references: [id], onDelete: Cascade)
+    sourceId String
+
+    // Target fragment (the one being linked TO)
+    target   Fragment @relation("TargetFragment", fields: [targetId], references: [id], onDelete: Cascade)
+    targetId String
+
+    // Ensure no duplicate relationships
+    @@unique([sourceId, targetId])
+    @@map("branches")
 }
 
 enum FragmentType {
@@ -47,4 +74,13 @@ enum FragmentType {
     QUOTE
     FEELING
     REFLECTION
+}
+
+enum BranchType {
+    THEME      // Similar topics/themes
+    EMOTION    // Similar emotional content
+    TIME       // Temporal proximity
+    MEMORY     // Related memories
+    MANUAL     // User-created connection
+    SEMANTIC   // AI-detected semantic similarity
 }
