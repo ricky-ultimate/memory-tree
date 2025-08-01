@@ -1,4 +1,7 @@
-import { PartialType } from '@nestjs/swagger';
+import { PartialType, OmitType } from '@nestjs/swagger';
 import { CreateBranchDto } from './create-branch.dto';
 
-export class UpdateBranchDto extends PartialType(CreateBranchDto) {}
+// Omit sourceId and targetId from updates - connections shouldn't change
+export class UpdateBranchDto extends PartialType(
+  OmitType(CreateBranchDto, ['sourceId', 'targetId'] as const)
+) {}
