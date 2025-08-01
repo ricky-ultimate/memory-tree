@@ -1,0 +1,105 @@
+# MemoryTree API Test File
+# Use this with REST Client extension in VS Code or similar tools
+
+### Health Check
+GET http://localhost:3000/health
+
+### Create a test user first (required for fragments)
+POST http://localhost:3000/users
+Content-Type: application/json
+
+{
+  "id": "test-user-123",
+  "email": "test@example.com",
+  "name": "Test User"
+}
+
+### Create a test fragment
+POST http://localhost:3000/fragments
+Content-Type: application/json
+
+{
+  "content": "Today I felt really anxious about the upcoming presentation at work. I keep overthinking every detail.",
+  "type": "FEELING",
+  "tags": ["work", "anxiety", "presentation"],
+  "mood": "anxious"
+}
+
+### Create another test fragment
+POST http://localhost:3000/fragments
+Content-Type: application/json
+
+{
+  "content": "Had a great conversation with my colleague about the project. Feeling more confident now.",
+  "type": "TEXT",
+  "tags": ["work", "confidence", "collaboration"],
+  "mood": "optimistic"
+}
+
+### Create a third test fragment
+POST http://localhost:3000/fragments
+Content-Type: application/json
+
+{
+  "content": "Dreamed about flying over mountains. It felt so peaceful and freeing.",
+  "type": "DREAM",
+  "tags": ["dreams", "peace", "freedom"],
+  "mood": "peaceful"
+}
+
+### Get all fragments
+GET http://localhost:3000/fragments
+
+### Create a manual connection between fragments
+POST http://localhost:3000/branches
+Content-Type: application/json
+
+{
+  "sourceId": "cmdt2ed550001mengg16p1jnk",
+  "targetId": "cmdt2fliq0003mengqervjb38",
+  "type": "EMOTION",
+  "weight": 0.8,
+  "metadata": {
+    "reason": "Both relate to work emotions"
+  }
+}
+
+### Get all connections
+GET http://localhost:3000/branches
+
+### Get memory tree visualization
+GET http://localhost:3000/branches/memory-tree
+
+### Get enhanced visualization (force layout, colored by type)
+GET http://localhost:3000/branches/visualization
+
+### Get enhanced visualization (timeline layout, colored by mood)
+GET http://localhost:3000/branches/visualization?layout=timeline&colorBy=mood&nodeSizeBy=connections
+
+### Get enhanced visualization (hierarchical layout, filtered by tags)
+GET http://localhost:3000/branches/visualization?layout=hierarchical&colorBy=tags&tags=work&minWeight=0.2
+
+### Get focused visualization around specific fragment
+GET http://localhost:3000/branches/visualization?focusFragmentId=REPLACE_WITH_FRAGMENT_ID&maxDepth=2&layout=circular
+
+### Auto-link fragments
+POST http://localhost:3000/branches/auto-link
+Content-Type: application/json
+
+{
+  "types": ["THEME", "EMOTION", "TIME"],
+  "minWeight": 0.3,
+  "maxConnections": 5
+}
+
+### Auto-link for specific fragment
+POST http://localhost:3000/branches/auto-link?fragmentId=REPLACE_WITH_FRAGMENT_ID&minWeight=0.2&maxConnections=3
+
+### Search fragments by mood
+GET http://localhost:3000/fragments?mood=anxious
+
+### Search fragments by tags
+GET http://localhost:3000/fragments?tags[]=work
+
+### Get fragments with pagination
+GET http://localhost:3000/fragments?page=1&limit=10
