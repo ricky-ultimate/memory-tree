@@ -4,13 +4,14 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
-import { ClerkAuthGuard } from '../auth/guards/clerk-auth.guard';
-import { GetUser } from '../common/decorators/get-user.decorator';
-import type { UserPayload } from '../auth/guards/clerk-auth.guard';
+import { SupabaseAuthGuard } from '../auth/guards/supabase-auth.guard';
+import { GetSupabaseUser } from '../common/decorators/supabase-user.decorator';
+import type { SupabaseUserPayload } from '../auth/guards/supabase-auth.guard';
+
 
 @ApiTags('users')
 @ApiBearerAuth()
-// @UseGuards(ClerkAuthGuard) // Temporarily disabled for testing
+@UseGuards(SupabaseAuthGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -28,7 +29,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({ status: 200, description: 'User profile retrieved successfully', type: UserResponseDto })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getCurrentUser(@GetUser() user: UserPayload): Promise<UserResponseDto> {
+  async getCurrentUser(@GetSupabaseUser() user: SupabaseUserPayload): Promise<UserResponseDto> {
     return this.usersService.findOne(user.id);
   }
 
@@ -47,7 +48,7 @@ export class UsersController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async updateCurrentUser(
     @Body() updateUserDto: UpdateUserDto,
-    @GetUser() user: UserPayload,
+    @GetSupabaseUser() user: SupabaseUserPayload,
   ): Promise<UserResponseDto> {
     return this.usersService.update(user.id, updateUserDto);
   }
@@ -56,7 +57,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Delete current user account' })
   @ApiResponse({ status: 204, description: 'User deleted successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async deleteCurrentUser(@GetUser() user: UserPayload): Promise<void> {
+  async deleteCurrentUser(@GetSupabaseUser() user: SupabaseUserPayload): Promise<void> {
     return this.usersService.remove(user.id);
   }
 }
