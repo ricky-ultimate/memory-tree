@@ -29,7 +29,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({ status: 200, description: 'User profile retrieved successfully', type: UserResponseDto })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getCurrentUser(@GetUser() user: UserPayload): Promise<UserResponseDto> {
+  async getCurrentUser(@GetSupabaseUser() user: SupabaseUserPayload): Promise<UserResponseDto> {
     return this.usersService.findOne(user.id);
   }
 
@@ -48,7 +48,7 @@ export class UsersController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async updateCurrentUser(
     @Body() updateUserDto: UpdateUserDto,
-    @GetUser() user: UserPayload,
+    @GetSupabaseUser() user: SupabaseUserPayload,
   ): Promise<UserResponseDto> {
     return this.usersService.update(user.id, updateUserDto);
   }
@@ -57,7 +57,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Delete current user account' })
   @ApiResponse({ status: 204, description: 'User deleted successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async deleteCurrentUser(@GetUser() user: UserPayload): Promise<void> {
+  async deleteCurrentUser(@GetSupabaseUser() user: SupabaseUserPayload): Promise<void> {
     return this.usersService.remove(user.id);
   }
 }

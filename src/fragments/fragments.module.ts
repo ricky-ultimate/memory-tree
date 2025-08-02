@@ -3,12 +3,12 @@ import { FragmentsService } from './fragments.service';
 import { FragmentsController } from './fragments.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { UsersModule } from '../users/users.module';
-import { ClerkAuthGuard } from '../auth/guards/clerk-auth.guard';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [PrismaModule, UsersModule],
+  imports: [PrismaModule, UsersModule, AuthModule],
   controllers: [FragmentsController],
-  providers: [FragmentsService, ClerkAuthGuard],
+  providers: [FragmentsService],
   exports: [FragmentsService],
 })
 export class FragmentsModule {}
