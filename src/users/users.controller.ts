@@ -4,13 +4,14 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
-import { ClerkAuthGuard } from '../auth/guards/clerk-auth.guard';
-import { GetUser } from '../common/decorators/get-user.decorator';
-import type { UserPayload } from '../auth/guards/clerk-auth.guard';
+import { SupabaseAuthGuard } from '../auth/guards/supabase-auth.guard';
+import { GetSupabaseUser } from '../common/decorators/supabase-user.decorator';
+import type { SupabaseUserPayload } from '../auth/guards/supabase-auth.guard';
+
 
 @ApiTags('users')
 @ApiBearerAuth()
-// @UseGuards(ClerkAuthGuard) // Temporarily disabled for testing
+@UseGuards(SupabaseAuthGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}

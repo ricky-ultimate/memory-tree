@@ -15,13 +15,13 @@ import { CreateFragmentDto } from './dto/create-fragment.dto';
 import { UpdateFragmentDto } from './dto/update-fragment.dto';
 import { GetFragmentsQueryDto } from './dto/get-fragments-query.dto';
 import { FragmentResponseDto, PaginatedFragmentsResponseDto } from './dto/fragment-response.dto';
-import { ClerkAuthGuard } from '../auth/guards/clerk-auth.guard';
-import { GetUser } from '../common/decorators/get-user.decorator';
-import type { UserPayload } from '../auth/guards/clerk-auth.guard';
+import { SupabaseAuthGuard } from '../auth/guards/supabase-auth.guard';
+import { GetSupabaseUser } from '../common/decorators/supabase-user.decorator';
+import type { SupabaseUserPayload } from '../auth/guards/supabase-auth.guard';
 
 @ApiTags('fragments')
 @ApiBearerAuth()
-// @UseGuards(ClerkAuthGuard) // Temporarily disabled for testing
+@UseGuards(SupabaseAuthGuard)
 @Controller('fragments')
 export class FragmentsController {
   constructor(private readonly fragmentsService: FragmentsService) {}
@@ -33,10 +33,9 @@ export class FragmentsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async create(
     @Body() createFragmentDto: CreateFragmentDto,
-    // @GetUser() user: UserPayload, // Temporarily disabled for testing
+    @GetSupabaseUser() user: SupabaseUserPayload,
   ): Promise<FragmentResponseDto> {
-    const testUserId = 'test-user-123'; // Temporary test user
-    return this.fragmentsService.create(testUserId, createFragmentDto);
+    return this.fragmentsService.create(user.id, createFragmentDto);
   }
 
   @Get()
@@ -45,10 +44,9 @@ export class FragmentsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async findAll(
     @Query() query: GetFragmentsQueryDto,
-    // @GetUser() user: UserPayload, // Temporarily disabled for testing
+    @GetSupabaseUser() user: SupabaseUserPayload,
   ): Promise<PaginatedFragmentsResponseDto> {
-    const testUserId = 'test-user-123'; // Temporary test user
-    return this.fragmentsService.findAllByUser(testUserId, query);
+    return this.fragmentsService.findAllByUser(user.id, query);
   }
 
   @Get(':id')
@@ -58,10 +56,9 @@ export class FragmentsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async findOne(
     @Param('id') id: string,
-    // @GetUser() user: UserPayload, // Temporarily disabled for testing
+    @GetSupabaseUser() user: SupabaseUserPayload,
   ): Promise<FragmentResponseDto> {
-    const testUserId = 'test-user-123'; // Temporary test user
-    return this.fragmentsService.findOne(id, testUserId);
+    return this.fragmentsService.findOne(id, user.id);
   }
 
   @Patch(':id')
@@ -72,10 +69,9 @@ export class FragmentsController {
   async update(
     @Param('id') id: string,
     @Body() updateFragmentDto: UpdateFragmentDto,
-    // @GetUser() user: UserPayload, // Temporarily disabled for testing
+    @GetSupabaseUser() user: SupabaseUserPayload,
   ): Promise<FragmentResponseDto> {
-    const testUserId = 'test-user-123'; // Temporary test user
-    return this.fragmentsService.update(id, testUserId, updateFragmentDto);
+    return this.fragmentsService.update(id, user.id, updateFragmentDto);
   }
 
   @Delete(':id')
@@ -85,9 +81,8 @@ export class FragmentsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async remove(
     @Param('id') id: string,
-    // @GetUser() user: UserPayload, // Temporarily disabled for testing
+    @GetSupabaseUser() user: SupabaseUserPayload,
   ): Promise<void> {
-    const testUserId = 'test-user-123'; // Temporary test user
-    return this.fragmentsService.remove(id, testUserId);
+    return this.fragmentsService.remove(id, user.id);
   }
 }
