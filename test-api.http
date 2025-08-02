@@ -4,6 +4,36 @@
 ### Health Check
 GET http://localhost:3000/health
 
+### === SUPABASE AUTH TESTS ===
+
+### Register a new user with Supabase
+POST http://localhost:3000/auth/supabase/signup
+Content-Type: application/json
+
+{
+  "email": "test@memorytree.com",
+  "password": "password123",
+  "name": "Memory Tree User"
+}
+
+### Verify token (you'll need to get a real token from Supabase client)
+POST http://localhost:3000/auth/supabase/verify-token
+Content-Type: application/json
+
+{
+  "token": "YOUR_SUPABASE_JWT_TOKEN_HERE"
+}
+
+### Test protected endpoint (requires Authorization header)
+GET http://localhost:3000/auth/supabase/me
+Authorization: Bearer YOUR_SUPABASE_JWT_TOKEN_HERE
+
+### Test auth endpoint
+POST http://localhost:3000/auth/supabase/test-auth
+Authorization: Bearer YOUR_SUPABASE_JWT_TOKEN_HERE
+
+### === ORIGINAL TESTS (still working with temp auth) ===
+
 ### Create a test user first (required for fragments)
 POST http://localhost:3000/users
 Content-Type: application/json
